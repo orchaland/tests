@@ -1,7 +1,6 @@
 package com.example.transactionJMS;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
@@ -13,21 +12,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.annotation.IntegrationComponentScan;
+import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.channel.QueueChannel;
 import org.springframework.integration.dsl.*;
-import org.springframework.integration.file.FileHeaders;
-import org.springframework.integration.file.FileWritingMessageHandler;
 import org.springframework.integration.file.dsl.Files;
-import org.springframework.integration.file.support.FileExistsMode;
 import org.springframework.integration.file.transformer.FileToStringTransformer;
 import org.springframework.integration.jms.dsl.Jms;
 import org.springframework.integration.scheduling.PollerMetadata;
 import org.springframework.jms.connection.JmsTransactionManager;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.PollableChannel;
-import org.springframework.messaging.support.GenericMessage;
-import org.springframework.scheduling.support.PeriodicTrigger;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -119,6 +112,11 @@ public class transactionJMSApplication implements CommandLineRunner {
 		return new QueueChannel();
 	}
 
+	@Bean(name = PollerMetadata.DEFAULT_POLLER)
+	public PollerMetadata fileWritingPoller() {
+		return Pollers.fixedRate(500).get();
+	}
+
 	@Bean
 	public IntegrationFlow jmsInboundGatewayFlow(){
 		return IntegrationFlows.from(Jms.inboundGateway(this.jmsConnectionFactory)
@@ -130,26 +128,39 @@ public class transactionJMSApplication implements CommandLineRunner {
 	@Bean
 	public IntegrationFlow fileWritingFlow() {
 		return IntegrationFlows.from(jmsInboundChannel())
-				.enrichHeaders(h -> h.header("directory", new File("." + File.separator + "output")))
-				.handle(Files.outboundGateway(new File( "." + File.separator + "output")).autoCreateDirectory(true) )
+				.routeToRecipients(r -> r
+						.recipient(fileWritingChannel1())
+						.recipient(fileWritingChannel2()))
+				.get();
+	}
+
+	@Bean
+	public DirectChannel fileWritingChannel1() {
+		return new DirectChannel();
+	}
+
+	@Bean
+	public IntegrationFlow fileWritingFlow1() {
+		return IntegrationFlows.from(fileWritingChannel1())
+				.enrichHeaders(h -> h.header("directory", new File("." + File.separator + "output1")))
+				.handle(Files.outboundGateway(new File( "." + File.separator + "output1")).autoCreateDirectory(true) )
 				.handle("conditionalService", "failForStudentFemale")
 				.log()
 				.get();
 	}
 
-	/*@Bean
-	public IntegrationFlow fileWritingFlow1() {
-		return IntegrationFlows.from(jmsInboundChannel())
-				.enrichHeaders(h -> h.header("directory", new File("." + File.separator + "output")))
-				.handle(Files.outboundGateway(new File( "." + File.separator + "output")).autoCreateDirectory(true) )
-				.handle("conditionalService", "failForStudentFemale")
-				.log()
-				.get();
-	}*/
+	@Bean
+	public DirectChannel fileWritingChannel2() {
+		return new DirectChannel();
+	}
 
-	@Bean(name = PollerMetadata.DEFAULT_POLLER)
-	public PollerMetadata fileWritingPoller() {
-		return Pollers.fixedRate(500).get();
+	@Bean
+	public IntegrationFlow fileWritingFlow2() {
+		return IntegrationFlows.from(fileWritingChannel2())
+				.handle("conditionalService", "failForStudentFemale")
+				.enrichHeaders(h -> h.header("directory", new File("." + File.separator + "output2")))
+				.handle(Files.outboundAdapter(new File( "." + File.separator + "output2")).autoCreateDirectory(true) )
+				.get();
 	}
 
 	public static void main(String[] args) {
