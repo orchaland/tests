@@ -28,7 +28,6 @@ import javax.jms.ConnectionFactory;
 import java.io.File;
 
 @SpringBootApplication
-//@IntegrationComponentScan
 @Configuration
 @ImportAutoConfiguration({ ActiveMQAutoConfiguration.class, JmxAutoConfiguration.class, IntegrationAutoConfiguration.class })
 @IntegrationComponentScan
@@ -171,19 +170,6 @@ public class transactionJMSApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws Exception {
-
-		/*PollableChannel replyChannel = new QueueChannel();
-
-		Message<String> message = MessageBuilder.withPayload("hello through the jms pipeline")
-				.setHeader("destination", "jmsPipelineTest")
-				.build();
-
-		this.jmsOutboundGateway.getInputChannel().send(message);*/
-
-
-		//Message<?> receive = jmsOutboundInboundReplyChannel().receive(5000);
-
-		//System.out.println("-----------------recu = " + receive);
 
 	}
 }
