@@ -23,6 +23,7 @@ import org.springframework.jms.connection.JmsTransactionManager;
 import org.springframework.messaging.PollableChannel;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ErrorHandler;
 
 import javax.jms.ConnectionFactory;
 import java.io.File;
@@ -40,7 +41,7 @@ public class transactionJMSApplication implements CommandLineRunner {
 	}
 
 	@Bean
-	@Transactional(value="jmsTransactionManager", propagation = Propagation.REQUIRES_NEW)
+	//@Transactional(value="jmsTransactionManager", propagation = Propagation.REQUIRES_NEW)
 	public IntegrationFlow fileToJMS() {
 		return IntegrationFlows.from(Files.inboundAdapter(new File("." + File.separator + "input"))
 						.autoCreateDirectory(true)
@@ -48,41 +49,9 @@ public class transactionJMSApplication implements CommandLineRunner {
 				e -> e.poller(Pollers.fixedDelay(5000)))
 				.transform(fileToStringTransformer())
 				.transform("payload.replaceAll('\r\n', '\n')")
-				.handle("conditionalService", "failForStudentFemale")
+				.handle("conditionalService", "beforeSendingJMS")
 				.channel(jmsOutboundGatewayFlow().getInputChannel())
 				.get();
-	}
-
-	/*@Transactional(value="jmsTransactionManager", propagation = Propagation.REQUIRES_NEW)
-	public Message readAndProcessMessage() throws JMSException
-	{
-		Message jmsMessage = jmsTemplate.receive(heldTransmissionDestination);
-		if(jmsMessage != null)
-		{
-			process(jmsMessage);
-		}
-		//have to return to break out of the while in the caller
-		return jmsMessage;
-	}
-
-	@Transactional(value="jmsTransactionManager", propagation = Propagation.NESTED)
-	protected void process(Message jmsMessage)
-	{
-		//code to process the jmsMessage, can potentially throw
-		//an exception that requires rolling back the jms transaction
-	}*/
-
-
-	class ConditionalService {
-
-		public Object failForStudentFemale(Object student) throws Exception {
-			System.out.println("----------- " + student);
-			/*if(student.getGender() == Gender.FEMALE){
-				throw new Exception();
-			}*/
-			return student;
-		}
-
 	}
 
 	@Bean
@@ -117,6 +86,7 @@ public class transactionJMSApplication implements CommandLineRunner {
 	}
 
 	@Bean
+	//@Transactional(value="jmsTransactionManager", propagation = Propagation.NESTED)
 	public IntegrationFlow jmsInboundGatewayFlow(){
 		return IntegrationFlows.from(Jms.inboundGateway(this.jmsConnectionFactory)
 				.destination("jmsPipelineTest")
@@ -124,7 +94,31 @@ public class transactionJMSApplication implements CommandLineRunner {
 				.get();
 	}
 
+	/*@Bean
+	public IntegrationFlow nonStop() {
+		return IntegrationFlows
+				.from(Jms.inboundGateway(this.jmsConnectionFactory)
+						.destination("jmsPipelineTest")
+						.configureListenerContainer(spec -> spec
+								.sessionTransacted(true)
+								.subscriptionDurable(true)
+								.durableSubscriptionName("durableSubscriptionName")
+								.errorHandler((ErrorHandler) t -> {
+									t.printStackTrace();
+									throw new RuntimeException(t);
+								}))
+						.errorChannel(errorChannel)
+						.autoStartup(true)
+						.id(myNonStoppableFlow))
+				.filter(...)
+            .transform(...)
+            .handle(Jms.outboundAdapter(emsConnectionFactory)
+				.destination(myOnotherDestination))
+				.get();
+	}*/
+
 	@Bean
+	//@Transactional(value="jmsTransactionManager", propagation = Propagation.NESTED)
 	public IntegrationFlow fileWritingFlow() {
 		return IntegrationFlows.from(jmsInboundChannel())
 				.routeToRecipients(r -> r
@@ -139,11 +133,12 @@ public class transactionJMSApplication implements CommandLineRunner {
 	}
 
 	@Bean
+	//@Transactional(value="jmsTransactionManager", propagation = Propagation.NESTED)
 	public IntegrationFlow fileWritingFlow1() {
 		return IntegrationFlows.from(fileWritingChannel1())
 				.enrichHeaders(h -> h.header("directory", new File("." + File.separator + "output1")))
 				.handle(Files.outboundGateway(new File( "." + File.separator + "output1")).autoCreateDirectory(true) )
-				.handle("conditionalService", "failForStudentFemale")
+				.handle("conditionalService", "fileWriting1")
 				.log()
 				.get();
 	}
@@ -154,9 +149,10 @@ public class transactionJMSApplication implements CommandLineRunner {
 	}
 
 	@Bean
+	//@Transactional(value="jmsTransactionManager", propagation = Propagation.NESTED)
 	public IntegrationFlow fileWritingFlow2() {
 		return IntegrationFlows.from(fileWritingChannel2())
-				.handle("conditionalService", "failForStudentFemale")
+				.handle("conditionalService", "fileWriting2")
 				.enrichHeaders(h -> h.header("directory", new File("." + File.separator + "output2")))
 				.handle(Files.outboundAdapter(new File( "." + File.separator + "output2")).autoCreateDirectory(true) )
 				.get();
