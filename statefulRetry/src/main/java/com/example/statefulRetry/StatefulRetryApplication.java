@@ -102,7 +102,7 @@ public class StatefulRetryApplication {
 		jmsOutboundGateway.setReplyChannel(jmsReplyChannel());
 		jmsOutboundGateway.setRequiresReply(true);
 		jmsOutboundGateway.setExtractReplyPayload(true);
-		jmsOutboundGateway.setReceiveTimeout(3000);
+		jmsOutboundGateway.setReceiveTimeout(15000);
 		jmsOutboundGateway.setReplyDestinationName("jmsReplyChannel");
 		jmsOutboundGateway.setReplyPubSubDomain(false);
 

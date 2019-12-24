@@ -45,6 +45,10 @@ public class IdempotenceApplication {
 			System.out.println("close order: " + order);
 			return order;
 		}
+		public Order discard(Order order){
+			System.out.println("discard order: " + order);
+			return order;
+		}
 	}
 
 	@Bean
@@ -74,7 +78,7 @@ public class IdempotenceApplication {
 						//.get(MessageHeaders.TIMESTAMP).toString(),
 						.get("orderID").toString(),
 						mongoDbMetadataStore(mongoDbFactory())));
-		interceptor.setDiscardChannel(afterServiceChannel());
+		interceptor.setDiscardChannel(discardChannel());
 		return interceptor;
 	}
 
@@ -100,6 +104,19 @@ public class IdempotenceApplication {
 	public IntegrationFlow afterServiceChannelFlow() {
 		return IntegrationFlows.from(afterServiceChannel())
 				.handle(processOrder(), "closeOrder")
+				.log()
+				.get();
+	}
+
+	@Bean
+	public DirectChannel discardChannel() {
+		return new DirectChannel();
+	}
+
+	@Bean
+	public IntegrationFlow discardChannelFlow() {
+		return IntegrationFlows.from(discardChannel())
+				.handle(processOrder(), "discard")
 				.log()
 				.get();
 	}

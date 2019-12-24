@@ -16,13 +16,21 @@ import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.dsl.Pollers;
 import org.springframework.integration.dsl.Transformers;
 import org.springframework.integration.handler.advice.ErrorMessageSendingRecoverer;
+import org.springframework.integration.handler.advice.RequestHandlerCircuitBreakerAdvice;
 import org.springframework.integration.handler.advice.RequestHandlerRetryAdvice;
 import org.springframework.integration.handler.advice.SpelExpressionRetryStateGenerator;
 import org.springframework.integration.jms.DefaultJmsHeaderMapper;
 import org.springframework.integration.jms.dsl.Jms;
 import org.springframework.jms.connection.JmsTransactionManager;
+import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.PollableChannel;
 import org.springframework.messaging.handler.annotation.Header;
+import org.springframework.retry.RetryPolicy;
+import org.springframework.retry.backoff.ExponentialBackOffPolicy;
+import org.springframework.retry.backoff.ExponentialRandomBackOffPolicy;
+import org.springframework.retry.backoff.FixedBackOffPolicy;
+import org.springframework.retry.policy.SimpleRetryPolicy;
+import org.springframework.retry.support.RetryTemplate;
 
 import javax.jms.ConnectionFactory;
 import java.util.ArrayList;
@@ -44,17 +52,47 @@ public class StatefulRetryConsumerApplication {
 
 	class ProcessOrder{
 
-		int nbOfFailure = 0;
+		int nbOfStatefulFailure = 0;
 
-		public Order confirm(Order order, @Header("uniqueId") String uniqueId) {
-			System.out.print("confirm has been called: " + nbOfFailure + " times for " + order + " and uniqueId:" + uniqueId + " ");
-			if (nbOfFailure < 1) {
-				System.out.print(" => throw Exception");
-				nbOfFailure++;
+		public Order statefulConfirm(Order order, @Header("uniqueId") String uniqueId) {
+			System.out.print("statefulConfirm has been called: " + nbOfStatefulFailure + " times for " + order + " and uniqueId:" + uniqueId + " ");
+			if (nbOfStatefulFailure < 1) {
+				System.out.println(" => throw Exception");
+				nbOfStatefulFailure++;
 				throw new RuntimeException();
 			} else {
 				order.setId(0);
-				System.out.print(" => return order: " + order);
+				System.out.println(" => return order: " + order);
+				return order;
+			}
+		}
+
+		int nbOfStatelessFailure = 0;
+
+		public Order statelessConfirm(Order order) {
+			System.out.print("statelesConfirm has been called: " + nbOfStatelessFailure + " times for " + order);
+			if (nbOfStatelessFailure < 2) {
+				System.out.println(" => throw Exception");
+				nbOfStatelessFailure++;
+				throw new RuntimeException();
+			} else {
+				order.setId(0);
+				System.out.println(" => return order: " + order);
+				return order;
+			}
+		}
+
+		int nbOfFailureForCircuitBreaker = 0;
+
+		public Order confirmWithCircuitBreaker(Order order) {
+			System.out.print("confirmWithCircuitBreaker has been called: " + nbOfFailureForCircuitBreaker + " times for " + order);
+			if (nbOfFailureForCircuitBreaker < 2) {
+				System.out.println(" => throw Exception");
+				nbOfFailureForCircuitBreaker++;
+				throw new RuntimeException();
+			} else {
+				order.setId(0);
+				System.out.println(" => return order: " + order);
 				return order;
 			}
 		}
@@ -115,7 +153,9 @@ public class StatefulRetryConsumerApplication {
 	public IntegrationFlow serviceFlow() {
 		return IntegrationFlows.from(jmsInboundChannel())
 				.transform(Transformers.fromJson(Order.class), e -> e.transactional(this.jmsTransactionManager()))
-				.handle("processOrder", "confirm", e -> e.advice(requestHandlerRetryAdvice()))	// The entire flow is transactional (for example, if there is a downstream outbound channel adapter)
+				.handle("processOrder", "statefulConfirm", e -> e.advice(requestHandlerStatefullRetryAdvice()))
+				.handle("processOrder", "statelessConfirm", e -> e.advice(requestHandlerStatelessRetryAdvice()))
+				.handle("processOrder", "confirmWithCircuitBreaker", e -> e.advice(requestHandlerCircuitBreakerAdvice()))
 				.transform(Transformers.toJson())
 				.channel(jmsReplyChannel())
 				.get();
@@ -129,11 +169,54 @@ public class StatefulRetryConsumerApplication {
 	}
 
 	@Bean
-	public RequestHandlerRetryAdvice requestHandlerRetryAdvice(){
+	public RequestHandlerRetryAdvice requestHandlerStatefullRetryAdvice(){
 		RequestHandlerRetryAdvice retryAdvice = new RequestHandlerRetryAdvice();
 		retryAdvice.setRecoveryCallback(new ErrorMessageSendingRecoverer(recoveryChannel()));
 		retryAdvice.setRetryStateGenerator(new SpelExpressionRetryStateGenerator("headers['uniqueId']"));
+		RetryTemplate retryTemplate = new RetryTemplate();
+		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(4));
+		ExponentialBackOffPolicy backOffPolicy = new ExponentialBackOffPolicy();
+		backOffPolicy.setInitialInterval(1000);
+		backOffPolicy.setMultiplier(2.0);
+		backOffPolicy.setMaxInterval(4000);
+		retryTemplate.setBackOffPolicy(backOffPolicy);
+		retryAdvice.setRetryTemplate(retryTemplate);
+
+		/*ExponentialRandomBackOffPolicy exponentialRandomBackOffPolicy = new ExponentialRandomBackOffPolicy();
+
+		FixedBackOffPolicy fixedBackOffPolicy = new FixedBackOffPolicy();
+		fixedBackOffPolicy.setBackOffPeriod(1000);*/
+
 		return retryAdvice;
+	}
+
+	@Bean
+	public RequestHandlerRetryAdvice requestHandlerStatelessRetryAdvice(){
+		RequestHandlerRetryAdvice retryAdvice = new RequestHandlerRetryAdvice();
+		retryAdvice.setRecoveryCallback(new ErrorMessageSendingRecoverer(recoveryChannel()));
+		RetryTemplate retryTemplate = new RetryTemplate();
+		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(4));
+		ExponentialBackOffPolicy backOffPolicy = new ExponentialBackOffPolicy();
+		backOffPolicy.setInitialInterval(1000);
+		backOffPolicy.setMultiplier(5.0);
+		backOffPolicy.setMaxInterval(60000);
+		retryTemplate.setBackOffPolicy(backOffPolicy);
+		retryAdvice.setRetryTemplate(retryTemplate);
+
+		/*ExponentialRandomBackOffPolicy exponentialRandomBackOffPolicy = new ExponentialRandomBackOffPolicy();
+
+		FixedBackOffPolicy fixedBackOffPolicy = new FixedBackOffPolicy();
+		fixedBackOffPolicy.setBackOffPeriod(1000);*/
+
+		return retryAdvice;
+	}
+
+	@Bean
+	public RequestHandlerCircuitBreakerAdvice requestHandlerCircuitBreakerAdvice(){
+		RequestHandlerCircuitBreakerAdvice circuitBreakerAdvice = new RequestHandlerCircuitBreakerAdvice();
+		circuitBreakerAdvice.setThreshold(2);
+		circuitBreakerAdvice.setHalfOpenAfter(1000);
+		return circuitBreakerAdvice;
 	}
 
 	@Bean

@@ -88,11 +88,11 @@ public class transactionJMSConsumerApplication implements CommandLineRunner {
 						.clientId("clientID1")			// for durable subscription
 						.subscriptionDurable(true)
 						.durableSubscriptionName("durableSubscriptionName")
-						/*.errorHandler((ErrorHandler) t -> {
-							t.printStackTrace();
-							throw new RuntimeException(t);
-						})*/)
+						//.backOff() ?
+						)
 				.requestChannel(jmsInboundChannel())
+				//.replyDeliveryPersistent(true)
+				//.replyTimeToLive(-1)
 				.replyChannel(jmsReplyChannel1())
 				.extractRequestPayload(true)
 				.extractReplyPayload(true))
