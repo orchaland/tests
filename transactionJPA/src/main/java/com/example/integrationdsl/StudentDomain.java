@@ -3,29 +3,17 @@ package com.example.integrationdsl;
 import javax.persistence.*;
 import java.util.Date;
 
-
-/**
- * The JPA Entity for the Student class
- *
- * @author Amol Nayak
- * @author Gunnar Hillert
- *
- * @since 2.2
- *
- */
 @Entity(name = "Student")
 @Table(name = "Student")
-@NamedQueries({
-        @NamedQuery(name = "selectAllStudents", query = "select s from Student s"),
-        @NamedQuery(name = "selectStudent", query = "select s from Student s where s.lastName = 'Last One'"),
-        @NamedQuery(name = "updateStudent",
-                query = "update Student s set s.lastName = :lastName, s.lastUpdated = :lastUpdated where s.rollNumber "
-                        + "in (select max(a.rollNumber) from Student a)")
-})
-@NamedNativeQuery(resultClass = StudentDomain.class, name = "updateStudentNativeQuery",
-        query = "update Student s set s.lastName = :lastName, lastUpdated = :lastUpdated where s.rollNumber "
-                + "in (select max(a.rollNumber) from Student a)")
 public class StudentDomain {
+
+    public StudentDomain(String firstName, int age) {
+        this.firstName = firstName;
+        this.age = age;
+    }
+
+    public StudentDomain(){
+    }
 
     @Id
     @Column(name = "rollNumber")
@@ -35,22 +23,11 @@ public class StudentDomain {
     @Column(name = "firstName")
     private String firstName;
 
-    @Column(name = "lastName")
-    private String lastName;
-
-    @Column(name = "gender")
-    private String gender;
-
-    @Column(name = "dateOfBirth")
-    @Temporal(TemporalType.DATE)
-    private Date dateOfBirth;
-
-    @Column(name = "lastUpdated")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date lastUpdated;
+    @Column(name = "age")
+    private int age;
 
     public Long getRollNumber() {
-        return this.rollNumber;
+        return rollNumber;
     }
 
     public void setRollNumber(Long rollNumber) {
@@ -58,76 +35,27 @@ public class StudentDomain {
     }
 
     public String getFirstName() {
-        return this.firstName;
+        return firstName;
     }
 
     public void setFirstName(String firstName) {
         this.firstName = firstName;
     }
 
-    public String getLastName() {
-        return this.lastName;
+    public int getAge() {
+        return age;
     }
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
+    public void setAge(int age) {
+        this.age = age;
     }
 
-    public Gender getGender() {
-        return Gender.getGenderFromIdentifier(this.gender);
+    @Override
+    public String toString() {
+        return "StudentDomain{" +
+                "rollNumber=" + rollNumber +
+                ", firstName='" + firstName + '\'' +
+                ", age=" + age +
+                '}';
     }
-
-    public void setGender(Gender gender) {
-        this.gender = gender.getIdentifier();
-    }
-
-    public Date getDateOfBirth() {
-        return this.dateOfBirth;
-    }
-
-    public void setDateOfBirth(Date dateOfBirth) {
-        this.dateOfBirth = dateOfBirth;
-    }
-
-
-    public Date getLastUpdated() {
-        return this.lastUpdated;
-    }
-
-    public void setLastUpdated(Date lastUpdated) {
-        this.lastUpdated = lastUpdated;
-    }
-
-    //Convenience methods for chaining method calls
-
-    public StudentDomain withRollNumber(Long rollNumber) {
-        setRollNumber(rollNumber);
-        return this;
-    }
-
-    public StudentDomain withFirstName(String firstName) {
-        setFirstName(firstName);
-        return this;
-    }
-
-    public StudentDomain withLastName(String lastName) {
-        setLastName(lastName);
-        return this;
-    }
-
-    public StudentDomain withGender(Gender gender) {
-        setGender(gender);
-        return this;
-    }
-
-    public StudentDomain withDateOfBirth(Date dateOfBirth) {
-        setDateOfBirth(dateOfBirth);
-        return this;
-    }
-
-    public StudentDomain withLastUpdated(Date lastUpdated) {
-        setLastUpdated(lastUpdated);
-        return this;
-    }
-
 }

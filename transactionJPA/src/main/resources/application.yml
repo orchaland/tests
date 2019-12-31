@@ -1,3 +1,6 @@
+orcha:
+  rollback-transaction-directory: output3
+  commit-transaction-directory: output2
 spring:
   datasource:
     url: jdbc:h2:mem:testdb
