@@ -4,7 +4,6 @@ import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
-import org.springframework.integration.IntegrationMessageHeaderAccessor;
 import org.springframework.integration.aggregator.CorrelationStrategy;
 import org.springframework.messaging.Message;
 import org.springframework.stereotype.Component;
@@ -15,7 +14,6 @@ public class TransactionCorrelationStrategy implements CorrelationStrategy {
 
     long groupId = 0;
     int transactionDepth = 0;
-    int sequenceNumber = 2;
 
     /**
      * Before all transactional methods
@@ -42,13 +40,6 @@ public class TransactionCorrelationStrategy implements CorrelationStrategy {
 
     @Override
     public Object getCorrelationKey(Message<?> message) {
-
-        sequenceNumber++;
-        Integer seqNumber = new Integer(sequenceNumber);
-        if(seqNumber == Integer.MAX_VALUE){
-            sequenceNumber = 2;
-        }
-
         boolean endOfTransaction = false;
         if (message.getPayload() instanceof String) {
             endOfTransaction = ((String)message.getPayload()).equals("commited transaction");
@@ -62,10 +53,6 @@ public class TransactionCorrelationStrategy implements CorrelationStrategy {
             groupId = 0L;
         }
         return new Long(groupId);
-    }
-
-    public int getSequenceNumber() {
-        return sequenceNumber;
     }
 
     public long getGroupId() {

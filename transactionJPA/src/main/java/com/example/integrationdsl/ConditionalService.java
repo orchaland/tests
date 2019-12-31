@@ -35,10 +35,6 @@ class ConditionalService{
         entityManager.joinTransaction();
         StudentDomain studentDomain = new StudentDomain("Ben", 25);
         entityManager.persist(studentDomain);		// attention même si merge est utilisé, si nouvelle tx => nouvelle insertion !
-        /*if(student.getAge() < 18){
-            System.out.println(" and throws an exception.");
-            throw new Exception();
-        }*/
         System.out.println(" and returns: " + student);
         return student;
     }
@@ -54,11 +50,6 @@ class ConditionalService{
         return student;
     }
 
-    /*public Object endOfAggregator(org.springframework.messaging.Message message){
-        System.out.println("******************** endOfAggregator messages: " + message);
-        return message;
-    }*/
-
     public List<?> readDatabase(){
         JdbcTemplate jdbcTemplate = new JdbcTemplate(this.dataSource);
         List<?> results = jdbcTemplate.queryForList("Select * from Student");		// Morgane
@@ -66,43 +57,27 @@ class ConditionalService{
     }
 
     @Transactional
-    public void manyStudentsInSeparatedTransactions(){
+    public void manyStudentsInValideTransaction(){
         StudentDomain morgane = new StudentDomain("A", 20);		// no exception => A is commited in the database
         school.add(morgane);
-        System.out.println("\nmanyStudentsInSeparatedTransactions first student added\n");
+        System.out.println("\nmanyStudentsInValideTransaction first student added\n");
         StudentDomain loic = new StudentDomain("B", 30);			// exception but new transaction => B is rolled back in the database
         school.add(loic);
     }
 
     @Transactional
-    public int manyStudentsInTheSameTransaction(){
+    public int manyStudentsInUnvalideTransaction(){
         StudentDomain morgane = new StudentDomain("C", 20);		// no exception => added to the transaction
         school.add(morgane);
-        System.out.println("\nmanyStudentsInTheSameTransaction first student added\n");
+        System.out.println("\nmanyStudentsInUnvalideTransaction first student added\n");
         StudentDomain loic = new StudentDomain("D", 50);			// exception in the same transaction => C and D are rollback in the database
         school.add(loic);
-        System.out.println("\nmanyStudentsInTheSameTransaction terminates");
+        System.out.println("\nmanyStudentsInUnvalideTransaction terminates");
         return 0;
     }
 
     public Object a(Object object){
-        System.out.println("aaaaaaaaaaaaaa "+ object);
         return object;
     }
-
-    public Object l1(Object object, @Header(IntegrationMessageHeaderAccessor.SEQUENCE_NUMBER) String SEQUENCE_NUMBER, @Header(IntegrationMessageHeaderAccessor.CORRELATION_ID) String CORRELATION_ID){
-        System.out.println("llllllllllllll1111111111 "+ object + ", SEQUENCE_NUMBER: " + SEQUENCE_NUMBER + ", CORRELATION_ID: " + CORRELATION_ID);
-        return object;
-    }
-
-    public Object list(Object object, @Header("sendChannel") String sendChannel, @Header(IntegrationMessageHeaderAccessor.SEQUENCE_NUMBER) String SEQUENCE_NUMBER, @Header(IntegrationMessageHeaderAccessor.CORRELATION_ID) String CORRELATION_ID){
-        System.out.println("oooooooooooooooooooooooo "+ object + ", sendChannel: " + sendChannel + ", SEQUENCE_NUMBER: " + SEQUENCE_NUMBER + ", CORRELATION_ID: " + CORRELATION_ID);
-        return object;
-    }
-
-    /*public Object list(Object object, @Header(IntegrationMessageHeaderAccessor.SEQUENCE_NUMBER) String SEQUENCE_NUMBER, @Header(IntegrationMessageHeaderAccessor.CORRELATION_ID) String CORRELATION_ID){
-        System.out.println("oooooooooooooooooooooooo "+ object + ", SEQUENCE_NUMBER: " + SEQUENCE_NUMBER + ", CORRELATION_ID: " + CORRELATION_ID);
-        return object;
-    }*/
 
 }
