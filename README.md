@@ -15,11 +15,11 @@ With the claim check property, a service can use again any data previously proce
 
 ```java
 receive order from customer
-prepare order               // returns a delivery<br>
+prepare order               // returns a delivery
 when "prepare terminates"
-deliver prepare.result        // returns a delivery with done = true<br>
-when "deliver terminates"<br>      
-charge deliver.result, order    // claim-check : retrieve the order<br>
+deliver prepare.result        // returns a delivery with done = true
+when "deliver terminates"
+charge deliver.result, order    // claim-check : retrieve the order
 ```
 
 Spring Integration: https://docs.spring.io/spring-integration/docs/5.2.3.RELEASE/reference/html/index-single.html#claim-check
