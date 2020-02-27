@@ -15,7 +15,7 @@ With the claim check property, a service can use again any data previously proce
 
 <code>
 receive order from customer<br>
-prepare order               // returns a delivery<br>
+prepare order               // returns a delivery<br><br>
 when "prepare terminates"<br>
 deliver prepare.result        // returns a delivery with done = true<br>
 when "deliver terminates"<br>      
