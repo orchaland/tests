@@ -13,14 +13,14 @@ Code generation: https://github.com/orchaland/tests/blob/master/generateDSL/src/
 
 With the claim check property, a service can use again any data previously processed in the process. In the following example, although order is processed at line “prepare order”, it can be used at the last line “charge deliver.result, order”:
 
-<code>
-receive order from customer<br>
-prepare order               // returns a delivery<br><br>
-when "prepare terminates"<br>
+```java
+receive order from customer
+prepare order               // returns a delivery<br>
+when "prepare terminates"
 deliver prepare.result        // returns a delivery with done = true<br>
 when "deliver terminates"<br>      
 charge deliver.result, order    // claim-check : retrieve the order<br>
-</code>
+```
 
 Spring Integration: https://docs.spring.io/spring-integration/docs/5.2.3.RELEASE/reference/html/index-single.html#claim-check
 
