@@ -52,62 +52,70 @@ Stateful = > dans un autre thread
 
 When a service fails it can retry automatically. Suppose the Orcha instruction:
 
-<code>controldentity with person</code>
+```java
+controldentity with person
+```
 
 To make the service controldentity retryable it must be annotated with @Retry:
 
-<code>
-@Configuration<br>
-class BoardingConfiguration {<br>
+```java
+@Configuration
+class BoardingConfiguration {
 
-   @Bean<br>
-   @Retry(intervalBetweenTheFirstAndSecondAttempt=1000, intervalMultiplierBetweenAttemps=5.0, maximumIntervalBetweenAttempts=60000)<br>
-   fun controlIdentity(): Application {<br>
-       val application = Application("controlIdentity", "Java")<br>
-       val javaAdapter = JavaServiceAdapter("service.airport.ControlPassengerIdentity", "control")<br>
-       application.input = Input(adapter=javaAdapter, type="service.airport.Person")<br>
-       application.output = Output(adapter=javaAdapter, type="service.airport.Passenger")<br>
-       return application<br>
-   }<br>
+   @Bean
+   @Retry(intervalBetweenTheFirstAndSecondAttempt=1000, intervalMultiplierBetweenAttemps=5.0, maximumIntervalBetweenAttempts=60000)
+   fun controlIdentity(): Application {
+       val application = Application("controlIdentity", "Java")
+       val javaAdapter = JavaServiceAdapter("service.airport.ControlPassengerIdentity", "control")
+       application.input = Input(adapter=javaAdapter, type="service.airport.Person")
+       application.output = Output(adapter=javaAdapter, type="service.airport.Passenger")
+       return application
+   }
 
-}<br>
-</code>
+}
+```
 
 Peut-être niveau technique (=> throw erreur) ou métier 
 If after the configured attempts the service still fails, this permanent failure must be taken into account by Orcha with:
 
-<code>when “controlIdentity fails” …</code>
+```java
+when “controlIdentity fails” …
+```
 
 There are situations where you don’t want a service to retry automatically after a failure, but you expect the caller resubmits the request, i.e. the smart contract is launched again. Nevertheless, the state of the previous attempts must be recovered for the new retry. The exactly what a stateful retry does. Such a retry must be declared with the @StatefulRetry  annotation:
 
 In memory by default !
 
-<code>
-@Configuration<br>
-class BoardingConfiguration {<br>
+```java
+@Configuration
+class BoardingConfiguration {
 
-   @Bean<br>
-   @StatefulRetry(intervalBetweenTheFirstAndSecondAttempt=1000, intervalMultiplierBetweenAttemps=5.0, maximumIntervalBetweenAttempts=60000)<br>
-   fun controlIdentity(): Application {<br>
-       val application = Application("controlIdentity", "Java")<br>
-       val javaAdapter = JavaServiceAdapter("service.airport.ControlPassengerIdentity", "control")<br>
-       application.input = Input(adapter=javaAdapter, type="service.airport.Person")<br>
-       application.output = Output(adapter=javaAdapter, type="service.airport.Passenger")<br>
-       return application<br>
-   }<br>
+   @Bean
+   @StatefulRetry(intervalBetweenTheFirstAndSecondAttempt=1000, intervalMultiplierBetweenAttemps=5.0, maximumIntervalBetweenAttempts=60000)
+   fun controlIdentity(): Application {
+       val application = Application("controlIdentity", "Java")
+       val javaAdapter = JavaServiceAdapter("service.airport.ControlPassengerIdentity", "control")
+       application.input = Input(adapter=javaAdapter, type="service.airport.Person")
+       application.output = Output(adapter=javaAdapter, type="service.airport.Passenger")
+       return application
+   }
 
-}<br>
-</code>
+}
+```
 
 The way the failed operations are recognized is by identifying the state across multiple invocations of the retry. To identify the state, a field among all the fields in the input of the service must be annotated with @StatefulRetryDiscriminant: 
 
-<code>class Person (val name: String, @StatefulRetryDiscriminant val passportID: String)</code>
+```java
+class Person (val name: String, @StatefulRetryDiscriminant val passportID: String)
+```
 
 Timestamp pour StatefulRetryDiscriminant tant que le service n’a pas réussit le client garde l’id
 
 If after the configured attempts the service still fails, this permanent failure must be taken into account by Orcha with:
 
-<code>when “controlIdentity fails” …</code>
+```java
+when “controlIdentity fails” …
+```
 
 Implementation: 
 
