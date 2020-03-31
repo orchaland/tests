@@ -34,6 +34,11 @@ prepare: Order{product='TV', id=1}
  ```
 
 ### What happened
+A file containing: 
+```java
+{"product":"TV","id":1}
+```
+has been read, then a Json converter create an Instance of this class: https://github.com/orchaland/tests/blob/master/gettingStarted/src/main/java/com/example/gettingStarted/Order.java
 ```java
     @Bean
     public IntegrationFlow fileReadingFlow() {
@@ -44,11 +49,6 @@ prepare: Order{product='TV', id=1}
                 .channel("processFileChannel").get();
     }
 ```
-A file containing: 
-```java
-{"product":"TV","id":1}
-```
-has been read, then a Json converter create an Instance of this class: https://github.com/orchaland/tests/blob/master/gettingStarted/src/main/java/com/example/gettingStarted/Order.java
 
 A channel receives the object:
 ```java
