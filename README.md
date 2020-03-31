@@ -9,6 +9,64 @@ Code to be generated: https://github.com/orchaland/tests/blob/master/generateDSL
 
 Code generation: https://github.com/orchaland/tests/blob/master/generateDSL/src/main/java/com/example/integrationdsl/CodeGeneration.java
 
+## Getting Started
+
+Software to be installed:
+- Java version jdk 1.8
+- Intellij
+- git client
+
+### Clone this project
+Use the git bash to clone this project:
+```java
+git clone https://github.com/orchaland/tests
+```
+
+### Project importation
+This project is compose of several independant projects. Open the getting started sub project inside Intellij.
+
+### Run
+The main program is inside this class: https://github.com/orchaland/tests/blob/master/gettingStarted/src/main/java/com/example/gettingStarted/GettingStartedApplication.java
+
+Run this program inside Intellij (if nothing happens close and open again the project inside Intellij): the Intellij console should display: 
+```java
+prepare: Order{product='TV', id=1}
+ ```
+
+### What happened
+```java
+    @Bean
+    public IntegrationFlow fileReadingFlow() {
+        return IntegrationFlows.from(Files.inboundAdapter(new File(".\\files")).patternFilter("*.json"),
+                a -> a.poller(Pollers.fixedDelay(1000)))
+                .transform(Files.toStringTransformer())
+                .transform(Transformers.fromJson(Order.class))
+                .channel("processFileChannel").get();
+    }
+```
+A file containing: 
+```java
+{"product":"TV","id":1}
+```
+has been read, then a Json converter create an Instance of this class: https://github.com/orchaland/tests/blob/master/gettingStarted/src/main/java/com/example/gettingStarted/Order.java
+
+A channel receives the object:
+```java
+    @Bean
+    public MessageChannel processFileChannel() {
+        return new DirectChannel();
+    }
+ ```
+Then, thanks to the handle method, it is processed by a prepare method: 
+```java
+    class ProcessOrder{
+        public void prepare(Order order){
+            System.out.println("prepare: " + order);
+        }
+    }
+
+```
+
 ## Claim check
 
 With the claim check property, a service can use again any data previously processed in the process. In the following example, although order is processed at line “prepare order”, it can be used at the last line “charge deliver.result, order”:
