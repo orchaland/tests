@@ -198,9 +198,26 @@ Often, you must combine stateful retry with idempotence since a stateful retry o
 
 Spring Integration : https://docs.spring.io/spring-integration/docs/5.2.3.RELEASE/reference/html/index-single.html#transactions
 
-Transaction with a relational database implementation: https://github.com/orchaland/tests/blob/master/transactionJPA/src/main/java/com/example/integrationdsl/transactionJPAApplication.java
+### Transaction with a relational database 
 
-Transaction with a message broker implementation: 
+Implementation: https://github.com/orchaland/tests/blob/master/transactionJPA/src/main/java/com/example/integrationdsl/transactionJPAApplication.java
+
+### Transaction with a message broker 
+
+ActiveMQ is used as a message broker. Docker is used to install and launch the broker
+
+Open the actimemq admin console: http://localhost:8161/
+
+Then select: Manage ActiveMQ broker
+
+login: admin
+password: admin
+
+A queue should has been created: jmsReplyDestinationName
+
+A topice should has been created: jmsPipelineTest
+
+Implementation: 
 
 https://github.com/orchaland/tests/blob/master/transactionJMS/src/main/java/com/example/transactionJMS/transactionJMSApplication.java
 
