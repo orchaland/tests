@@ -206,7 +206,7 @@ Implementation: https://github.com/orchaland/tests/blob/master/transactionJPA/sr
 
 ActiveMQ is used as a message broker. Docker is used to install and launch the broker. The Dockerfile is there: https://github.com/orchaland/tests/tree/master/brokers/activemq
 
-Build the Docker image with (from the directory containin the Dockerfile): 
+Build the Docker image with (from the directory containing the Dockerfile): 
 
 ```java
 docker build -t active-mq .
@@ -218,7 +218,7 @@ Run the container:
 docker run -p 61616:61616 -p 8161:8161 active-mq
 ```
 
-Open the actimemq admin console: http://localhost:8161/
+Open the activemq admin console: http://localhost:8161/
 
 Then select: Manage ActiveMQ broker
 
