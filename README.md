@@ -204,24 +204,41 @@ Implementation: https://github.com/orchaland/tests/blob/master/transactionJPA/sr
 
 ### Transaction with a message broker 
 
-ActiveMQ is used as a message broker. Docker is used to install and launch the broker
+ActiveMQ is used as a message broker. Docker is used to install and launch the broker. The Dockerfile is there: https://github.com/orchaland/tests/tree/master/brokers/activemq
+
+Build the Docker image with (from the directory containin the Dockerfile): 
+
+```java
+docker build -t active-mq .
+```
+
+Run the container: 
+
+```java
+docker run -p 61616:61616 -p 8161:8161 active-mq
+```
 
 Open the actimemq admin console: http://localhost:8161/
 
 Then select: Manage ActiveMQ broker
 
 login: admin
+
 password: admin
+
+Implementation: 
+
+Message producer: https://github.com/orchaland/tests/blob/master/transactionJMS/src/main/java/com/example/transactionJMS/transactionJMSApplication.java
+
+Message consumer: https://github.com/orchaland/tests/blob/master/transactionJMSConsumer/src/main/java/com/example/transactionJMSConsumer/transactionJMSConsumerApplication.java
+
+Launch the consumer first, then the producer.
 
 A queue should has been created: jmsReplyDestinationName
 
 A topice should has been created: jmsPipelineTest
 
-Implementation: 
 
-https://github.com/orchaland/tests/blob/master/transactionJMS/src/main/java/com/example/transactionJMS/transactionJMSApplication.java
-
-https://github.com/orchaland/tests/blob/master/transactionJMSConsumer/src/main/java/com/example/transactionJMSConsumer/transactionJMSConsumerApplication.java
 ## Message store mongoDB
 
 Database directory c:\data\db
