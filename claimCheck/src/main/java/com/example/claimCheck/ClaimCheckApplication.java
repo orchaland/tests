@@ -68,7 +68,7 @@ public class ClaimCheckApplication {
 		return new ClaimCheckInTransformer(messageStore());
 	}
 
-	class ProcessOrder{
+	/*class ProcessOrder{
 		public Delivery prepare(Order order){
 			System.out.print("prepare order: " + order);
 			Delivery delivery = new Delivery(order.getId(), "Av des Champs Elysées, Paris");
@@ -87,7 +87,7 @@ public class ClaimCheckApplication {
 			System.out.println(" and return: " + bill);
 			return bill;
 		}
-	}
+	}*/
 
 	@Bean
 	ProcessOrderExtended processOrder(){
