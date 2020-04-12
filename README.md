@@ -254,3 +254,14 @@ use <db>
 show collections
 
 db.collection.find()
+
+## Spring Cloud Stream
+
+https://kafka.apache.org/quickstart
+
+```java
+tar -xzf kafka_*.tgz
+cd kafka_*
+bin/zookeeper-server-start.sh config/zookeeper.properties
+bin/kafka-server-start.sh config/server.properties
+```
