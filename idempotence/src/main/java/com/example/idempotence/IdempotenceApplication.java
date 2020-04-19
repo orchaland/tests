@@ -36,7 +36,7 @@ public class IdempotenceApplication {
 		void placeOrder(Order order);
 	}
 
-	class ProcessOrder{
+	/*class ProcessOrder{
 		public Order confirm(Order order){
 			System.out.println("confirm order: " + order);
 			return order;
@@ -49,7 +49,7 @@ public class IdempotenceApplication {
 			System.out.println("discard order: " + order);
 			return order;
 		}
-	}
+	}*/
 
 	@Bean
 	ProcessOrder processOrder(){

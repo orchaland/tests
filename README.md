@@ -240,16 +240,17 @@ A topice should has been created: jmsPipelineTest
 
 
 ## Message store mongoDB
+Download image mongo : docker pull mongo
 
-Database directory c:\data\db
+Run the container: docker run -d -p 27017-27019:27017-27019 --name mongodb mongo
 
-Lauch mongo (from bin folder): mongod
+connect to our deployment mongodb: docker exec -it mongodb bash
 
-Check database content (from bin folder): mongo
+Lauch MongoDB shell client : mongo
 
 show dbs
 
-use <db>
+use test 
 
 show collections
 
