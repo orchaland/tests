@@ -45,11 +45,11 @@ public class GettingStartedApplication {
                 .get();
     }
 
-    class ProcessOrder{
+   /* class ProcessOrder{
         public void prepare(Order order){
             System.out.println("prepare: " + order);
         }
-    }
+    }*/
 
     @Bean
     ProcessOrder processOrder(){
