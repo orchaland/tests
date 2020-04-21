@@ -3,7 +3,7 @@ orcha:
   commit-transaction-directory: output2
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb
+    url: jdbc:h2:tcp://localhost:1521/test
     driverClassName: org.h2.Driver
     username: sa
     password: password
