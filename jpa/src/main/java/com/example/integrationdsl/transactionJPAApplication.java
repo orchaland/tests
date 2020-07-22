@@ -85,7 +85,7 @@ public class transactionJPAApplication {
 		ConfigurableApplicationContext context = SpringApplication.run(transactionJPAApplication.class, args);
 
 		PopulateDatabase populateDatabase = (PopulateDatabase)context.getBean("populateDatabase");
-
+		List<?> results = populateDatabase.readDatabase();
 		try{
 
 			StudentDomain student = new StudentDomain("Morgane", 21, 1);
@@ -94,11 +94,13 @@ public class transactionJPAApplication {
 			populateDatabase.saveStudent(student1);
 			StudentDomain student2 = new StudentDomain("Morgane2", 22, 3);
 			populateDatabase.saveStudent(student2);
-			List<?> results = populateDatabase.readDatabase();
+
 			System.out.println("database: " + results);
 
 		} catch(Exception e){
 			System.out.println(">>>>>> Caught exception: " + e);
 		}
+		results = populateDatabase.readDatabase();
+		System.out.println("database: " + results);
 	}
 }
