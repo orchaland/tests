@@ -27,24 +27,16 @@ public class PopulateDatabase {
         entityManager.merge(student);
         System.out.println(" and save it.");
     }
-//enrollStudent with student
-//when "enrollStudent terminates"
-//send  enrollStudent.result to studentBase
-    /*	send student to studentDataBase		// transactional by default as soon as the database is transactional
-	administrativeEnrollment student
-	courseEnrollment student
-	send student to welcomeFile*/
 
-    public StudentDomain enrollStudent(StudentDomain student) throws Exception {
-        System.out.print("courseEnrollment receives: " + student);
-      // student.setFirstName(student.getFirstName() + "-fileTransaction");
-        if(student.getAge() > 30){
-            System.out.println(" and throws an exception.");
-            throw new Exception();
-        }
-        System.out.println(" and returns: " + student);
-        return student;
-    }
+   public StudentDomain enrollStudent(StudentDomain student) throws Exception {
+    System.out.print("enrollStudent receives: " + student);
+    EntityManager entityManager = entityManagerFactory.createEntityManager();
+    entityManager.joinTransaction();
+    StudentDomain studentDomain = new StudentDomain("Ben", 25,5);
+    entityManager.persist(studentDomain);		// attention même si merge est utilisé, si nouvelle tx => nouvelle insertion !
+    System.out.println(" and returns: " + student);
+    return student;
+}
 
     public List<?> readDatabase(){
         JdbcTemplate jdbcTemplate = new JdbcTemplate(this.dataSource);

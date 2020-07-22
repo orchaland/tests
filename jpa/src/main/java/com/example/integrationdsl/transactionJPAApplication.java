@@ -35,10 +35,8 @@ public class transactionJPAApplication {
 								.maxResults(1)
 								.expectSingleResult(true),
 						e -> e.poller(p -> p.fixedDelay(5000)))
-				//.handle("PopulateDatabase", "enrollStudent")
 				.channel("enrollStudentChannel.input")
 				.log()
-				//.channel(c -> c.queue("pollingResults"))
 				.get();
 	}
 
@@ -46,25 +44,21 @@ public class transactionJPAApplication {
 	public IntegrationFlow enrollStudentChannel() {
 		return f -> f
 				.handle("PopulateDatabase", "enrollStudent", c -> c.transactional(true))
-				//.enrichHeaders(h -> h.header("sendChannel", "send_student_to_welcomeFile"))
 				.enrichHeaders(h -> h.headerExpression("messageID", "headers['id'].toString()"))
-				.routeToRecipients(r -> r
-						.recipient("outputRetainingAggregatorChannel")
-						.recipient("outputChannel")							// next channel
-				);
+				.channel("outputRetainingAggregatorChannel");
+
 	}
-	@Bean
-	public DirectChannel outputChannel() {
-		return new DirectChannel();
-	}
+
 	@Bean
 	public DirectChannel outputRetainingAggregatorChannel() {
 		return new DirectChannel();
 	}
+
+
 	@Bean
 	public IntegrationFlow outputRetainingAggregatorFlow() {
 		return IntegrationFlows.from(outputRetainingAggregatorChannel())
-				.aggregate(a ->	a
+				.aggregate(a -> a
 						.releaseExpression("size()==1 and ( ((getMessages().toArray())[0].payload instanceof T(orcha.lang.configuration.Application) AND (getMessages().toArray())[0].payload.state==T(orcha.lang.configuration.Application.State).TERMINATED) )")
 						.correlationExpression("headers['messageID']"))
 				.get();
@@ -84,23 +78,25 @@ public class transactionJPAApplication {
 
 		ConfigurableApplicationContext context = SpringApplication.run(transactionJPAApplication.class, args);
 
-		PopulateDatabase populateDatabase = (PopulateDatabase)context.getBean("populateDatabase");
+		PopulateDatabase populateDatabase = (PopulateDatabase) context.getBean("populateDatabase");
 		List<?> results = populateDatabase.readDatabase();
-		try{
+
+		System.out.println("\nmanyStudentsInValideTransaction is starting\n");
+		try {
 
 			StudentDomain student = new StudentDomain("Morgane", 21, 1);
 			populateDatabase.saveStudent(student);
-			StudentDomain student1 = new StudentDomain("marwa", 35, 1);
-			populateDatabase.saveStudent(student1);
-			StudentDomain student2 = new StudentDomain("Morgane2", 22, 3);
-			populateDatabase.saveStudent(student2);
-
+			//List<?> results = populateDatabase.readDatabase();
 			System.out.println("database: " + results);
 
-		} catch(Exception e){
+		} catch (Exception e) {
 			System.out.println(">>>>>> Caught exception: " + e);
 		}
+
 		results = populateDatabase.readDatabase();
 		System.out.println("database: " + results);
+		//List<?> results = populateDatabase.readDatabase();
+
+
 	}
 }
