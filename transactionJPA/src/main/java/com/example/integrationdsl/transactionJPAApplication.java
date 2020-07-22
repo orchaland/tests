@@ -14,6 +14,7 @@ import org.springframework.integration.dsl.*;
 import org.springframework.integration.file.dsl.Files;
 import org.springframework.integration.jpa.dsl.Jpa;
 import org.springframework.integration.jpa.support.PersistMode;
+import org.springframework.scheduling.support.CronTrigger;
 
 import javax.persistence.EntityManagerFactory;
 import java.io.File;
@@ -136,6 +137,7 @@ public class transactionJPAApplication {
 	public static void main(String[] args) {
 
 		ConfigurableApplicationContext context = SpringApplication.run(transactionJPAApplication.class, args);
+
 		ConditionalService conditionalService = (ConditionalService) context.getBean("conditionalService");
 
 		System.out.println("\nmanyStudentsInValideTransaction is starting\n");
