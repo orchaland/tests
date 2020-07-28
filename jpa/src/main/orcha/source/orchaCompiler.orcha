@@ -1,0 +1,7 @@
+title:orcha compiler
+authors:Ben Orcha
+
+receive student from studentDatabase
+enrollStudent with student
+when "enrollStudent terminates"
+send enrollStudent.result to studentOutputDatabase
