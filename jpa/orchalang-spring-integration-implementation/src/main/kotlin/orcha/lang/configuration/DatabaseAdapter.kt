@@ -11,6 +11,7 @@ class DatabaseAdapter () : ConfigurableProperties(){
     @Autowired
     lateinit var connection: DatabaseConnection
 
-
-
 }
+
+
+
