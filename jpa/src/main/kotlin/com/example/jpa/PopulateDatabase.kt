@@ -19,6 +19,7 @@ class PopulateDatabase {
     @Transactional
     @Throws(Exception::class)
     fun saveStudent(student: StudentDomain) {
+        print("ici " + entityManagerFactory)
         print("saveStudent receives: $student")
         val entityManager = entityManagerFactory!!.createEntityManager()
         entityManager.joinTransaction()
