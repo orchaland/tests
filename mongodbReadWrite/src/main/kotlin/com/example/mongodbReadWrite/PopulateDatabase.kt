@@ -1,17 +1,22 @@
 package com.example.mongodbReadWrite
 
 //import com.mongodb.reactivestreams.client.MongoClients
-import org.springframework.data.mongodb.core.ReactiveMongoTemplate
+
+import com.mongodb.client.MongoClients
+import org.springframework.data.mongodb.core.MongoOperations
+import org.springframework.data.mongodb.core.MongoTemplate
+import org.springframework.data.mongodb.core.query.Criteria.where
 import org.springframework.data.mongodb.core.query.Query
+import org.springframework.data.mongodb.core.query.Query.query
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
 
+
 @Component
-//class PopulateDatabase(val mongoOps: ReactiveMongoTemplate = ReactiveMongoTemplate(MongoClients.create(), "test")) {
-class PopulateDatabase() {
+class PopulateDatabase( var mongoOps: MongoOperations = MongoTemplate(MongoClients.create(), "database")) {
 
     fun saveStudent(student: StudentDomain) {
-       // mongoOps.insert(student)
+       mongoOps.insert(student)
     }
 
     @Throws(Exception::class)
@@ -22,10 +27,12 @@ class PopulateDatabase() {
         return student
     }
 
-    fun readDatabase(): Flux<StudentDomain>? {
-        val query = Query()
-       // return mongoOps!!.find(query, StudentDomain::class.java)
-        return null
+  fun readDatabase(): List<StudentDomain> {
+      return mongoOps.find(Query(), StudentDomain::class.java)
+
     }
 
+    fun  delatStudent(student: StudentDomain) {
+        mongoOps.dropCollection("student");
+    }
 }

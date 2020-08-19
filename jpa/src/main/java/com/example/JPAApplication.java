@@ -95,7 +95,7 @@ public class JPAApplication {
             StudentDomain student = new StudentDomain("Morgane", 21, -1);
             populateDatabase.saveStudent(student);
             results = populateDatabase.readDatabase();
-            System.out.println("database: " + results);
+           // System.out.println("database: " + results);
 
         } catch (Exception e) {
             System.out.println(">>>>>> Caught exception: " + e);

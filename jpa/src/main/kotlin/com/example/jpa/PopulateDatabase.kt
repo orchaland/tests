@@ -32,7 +32,7 @@ class PopulateDatabase {
         print("enrollStudent receives: $student")
         val entityManager = entityManagerFactory!!.createEntityManager()
         entityManager.joinTransaction()
-        val studentDomain = StudentDomain("Ben", 25, 5)
+        val studentDomain = StudentDomain("Morgane", 21)
         entityManager.persist(studentDomain) // attention même si merge est utilisé, si nouvelle tx => nouvelle insertion !
         println(" and returns: $student")
         return student

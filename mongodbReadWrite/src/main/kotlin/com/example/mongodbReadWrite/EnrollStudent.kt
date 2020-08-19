@@ -7,7 +7,7 @@ class EnrollStudent {
         return student
     }
     fun get(): StudentDomain {
-        println("ooooookkkkkkkk")
-        return StudentDomain(firstName = "Lineda", age = 40)
+        println("ok")
+        return StudentDomain("Marwa", 40)
     }
 }

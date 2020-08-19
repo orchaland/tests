@@ -49,24 +49,25 @@ public class MongodbReadWriteApplication {
     }
 
     @Autowired
-    private MongoDatabaseFactory mongoDbFactory;
-
-    /*@Autowired
     private MongoConverter mongoConverter;
-
     @Bean
     public IntegrationFlow gatewaySingleQueryFlow() {
         return f -> f
+                .handle(queryOutboundGateway());
+    }
+    @Bean
+    public IntegrationFlow queryOutboundGateway() {
+        return f -> f
                 .handle(MongoDb.outboundGateway(mongoDbFactory(), this.mongoConverter)
-                        .query("{firstName : 'Lineda'}")
-                        .collectionNameExpression("'student'")
-                        //.collectionNameFunction(m -> (String)m.getHeaders().get("student"))
+                        .query("{firstName : 'Marwa'}")
+                        .collectionNameExpression("student")
                         .expectSingleResult(true)
                         .entityClass(StudentDomain.class))
                 .enrichHeaders(h -> h.headerExpression("messageID", "headers['id'].toString()"))
                 .channel("enrollStudentChannel.input")
                 .log();
     }
+
 
     @Bean(name = "enrollStudent")
     EnrollStudent enrollStudent() {
@@ -91,13 +92,8 @@ public class MongodbReadWriteApplication {
     @Bean
     public IntegrationFlow aggregateEnrollStudentChannel() {
         return f -> f.aggregate(a -> a.releaseExpression("size()==1 AND (((getMessages().toArray())[0].payload instanceof Transpiler(orcha.lang.App) AND (getMessages().toArray())[0].payload.state==Transpiler(orcha.lang.configuration.State).TERMINATED))").correlationExpression("headers['messageID']")).transform("payload.?[name=='enrollStudent']").handle(applicationToMessage(), "transform").channel("studentOutputDatabaseChannel.input");
-    }*/
-
-    @MessagingGateway
-    public interface School {
-        @Gateway(requestChannel = "studentOutputDatabaseChannel.input")
-        void placeOrder(StudentDomain student);
     }
+
 
     @Bean
     public IntegrationFlow studentOutputDatabaseChannel() {
@@ -116,14 +112,21 @@ public class MongodbReadWriteApplication {
     public static void main(String[] args) {
 
         ConfigurableApplicationContext context = SpringApplication.run(MongodbReadWriteApplication.class, args);
+        PopulateDatabase populateDatabase = (PopulateDatabase) context.getBean("populateDatabase");
+        StudentDomain student = new StudentDomain("Marwa", 40, -1);
+        populateDatabase.saveStudent(student);
+        populateDatabase.readDatabase();
+        System.out.println("database: " +  populateDatabase.readDatabase());
 
-        School school = context.getBean(School.class);
-        StudentDomain studentDomain = new StudentDomain("Lineda", 40, -1);
-        school.placeOrder(studentDomain);
+
+
+        /*School school = context.getBean(School.class);
+        StudentDomain studentDomain = new StudentDomain("Marwa", 40, -1);
+        school.saveStudent(studentDomain);*/
 
         /*PopulateDatabase populateDatabase = (PopulateDatabase) context.getBean("populateDatabase");
         //List<?> results = populateDatabase.readDatabase();
-        Flux<StudentDomain> results;
+
 
         System.out.println("\nmanyStudentsInValideTransaction is starting\n");
         try {

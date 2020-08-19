@@ -5,21 +5,7 @@ import javax.persistence.*
 
 
 @Entity(name = "Student")
-@Table(name = "Student")
 class StudentDomain {
-    constructor(firstName: String?, age: Int) {
-        this.firstName = firstName
-        this.age = age
-    }
-
-    constructor(firstName: String?, age: Int, rollNumber: Long) {
-        this.firstName = firstName
-        this.age = age
-        this.rollNumber = rollNumber
-    }
-
-    constructor() {}
-
     @Id
     @Column(name = "rollNumber")
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -30,6 +16,16 @@ class StudentDomain {
 
     @Column(name = "age")
     var age = 0
+    constructor(firstName: String?, age: Int) {
+        this.firstName = firstName
+        this.age = age
+    }
+
+    constructor(firstName: String?, age: Int, rollNumber: Long) {
+        this.firstName = firstName
+        this.age = age
+        this.rollNumber = rollNumber
+    }
 
     override fun toString(): String {
         return "StudentDomain{" +
